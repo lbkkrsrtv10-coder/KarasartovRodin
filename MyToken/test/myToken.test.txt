@@ -1,0 +1,33 @@
+const MyToken = artifacts.require("./Token.sol");
+
+contract('MyToken', (accounts) => {
+  it('should put 1,000,000,000 MyToken in the first account', async () => {
+    const myTokenInstance = await MyToken.deployed();
+    const totalSupply = await myTokenInstance.totalSupply();
+
+    // В аккаунте accounts[0] (создателе) должен быть весь запас
+    const balance = await myTokenInstance.balanceOf(accounts[0]);
+    assert.equal(balance.valueOf(), totalSupply.valueOf(), "Balance doesn't match total supply!");
+  });
+
+  it('should transfer tokens correctly', async () => {
+    const myTokenInstance = await MyToken.deployed();
+    const receiver = accounts[1];
+    const sender = accounts[0];
+    const amount = 100;
+
+    // Получаем начальные балансы
+    let senderBalanceBefore = await myTokenInstance.balanceOf(sender);
+    let receiverBalanceBefore = await myTokenInstance.balanceOf(receiver);
+
+    // Отправляем токены
+    await myTokenInstance.transfer(receiver, amount, { from: sender });
+
+    // Проверяем конечные балансы
+    let senderBalanceAfter = await myTokenInstance.balanceOf(sender);
+    let receiverBalanceAfter = await myTokenInstance.balanceOf(receiver);
+
+    assert.equal(senderBalanceBefore - amount, senderBalanceAfter, "Sender balance incorrect");
+    assert.equal(Number(receiverBalanceBefore) + amount, receiverBalanceAfter, "Receiver balance incorrect");
+  });
+});
