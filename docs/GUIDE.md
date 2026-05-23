@@ -1,7 +1,7 @@
 # Руководство по созданию и развертыванию собственной криптовалюты на Ethereum (Hoodi Testnet)
 
 > **Полное пошаговое руководство для начинающих**  
-> От написания смарт-контракта до отправки токенов в кошельке
+<img width="1200" height="522" alt="image" src="https://github.com/user-attachments/assets/0f87ada2-991c-4789-ac2b-8c32c4d708f4" />
 
 ---
 
@@ -562,6 +562,11 @@ console.log('Total supply:', Number(totalSupply.toString()) / 10**18);
 
 ---
 
+<img width="782" height="654" alt="image" src="https://github.com/user-attachments/assets/bdca1173-d7cb-4ec9-a864-2252413fb91b" />
+
+<img width="578" height="1280" alt="image" src="https://github.com/user-attachments/assets/9a0223cd-2a95-4c92-81ca-27f6aac1f0a1" />
+
+
 ## Устранение неполадок
 
 ### Ошибка: `Mnemonic invalid or undefined`
@@ -643,121 +648,7 @@ hoodi: {
 
 ---
 
-## Дальнейшие шаги
 
-### 1. Добавление функции создания токенов (Mint)
-
-Отредактируйте `contracts/Token.sol`:
-
-```solidity
-// Добавьте импорт Ownable для контроля доступа
-import "@openzeppelin/contracts/access/Ownable.sol";
-
-// Наследуйте также Ownable
-contract MyToken is ERC20, Ownable {
-
-    uint256 public constant INITIAL_SUPPLY = 1000000000 * (10 ** 18);
-
-    constructor() ERC20("MY_TOKEN", "MYT") Ownable(msg.sender) {
-        _mint(msg.sender, INITIAL_SUPPLY);
-    }
-
-    // Функция создания новых токенов (только владелец)
-    function mint(address to, uint256 amount) external onlyOwner {
-        _mint(to, amount);
-    }
-}
-```
-
-### 2. Добавление функции сжигания токенов (Burn)
-
-```solidity
-// Любой может сжечь свои токены
-function burn(uint256 amount) external {
-    _burn(msg.sender, amount);
-}
-```
-
-### 3. Верификация контракта на Etherscan
-
-Чтобы другие могли видеть ваш код:
-
-```bash
-# Установите плагин верификации
-npm install @truffle/plugin-verify
-
-# Запустите верификацию
-truffle run verify MyToken --network hoodi --license MIT
-```
-
-Или вручную:
-
-1. Откройте [hoodi.etherscan.io](https://hoodi.etherscan.io)
-2. Найдите ваш контракт
-3. Нажмите **«Verify and Publish»**
-4. Выберите **«Solidity (Single file)»**
-5. Вставьте код из `Token.sol`
-6. Выберите версию компилятора `0.8.20`
-7. Нажмите **«Verify»**
-
-### 4. Создание веб-интерфейса для вашего токена
-
-Используйте библиотеку Web3.js для создания простого сайта:
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>MyToken - Обзор баланса</title>
-    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
-</head>
-<body>
-    <h1>MyToken (MYT)</h1>
-    <p>Адрес контракта: <span id="contract-address">0x1816...</span></p>
-    <p>Ваш баланс: <span id="balance">Загрузка...</span></p>
-
-    <script>
-        const contractAddress = "0x1816eeda78540C0BEf142508b7A76E89C916feB0";
-        const abi = [ /* ABI из build/contracts/Token.json */ ];
-
-        async function getBalance() {
-            if (window.ethereum) {
-                const web3 = new Web3(window.ethereum);
-                await window.ethereum.request({ method: 'eth_requestAccounts' });
-                const contract = new web3.eth.Contract(abi, contractAddress);
-                const accounts = await web3.eth.getAccounts();
-                const balance = await contract.methods.balanceOf(accounts[0]).call();
-                document.getElementById('balance').innerText = balance / 10**18;
-            }
-        }
-
-        getBalance();
-    </script>
-</body>
-</html>
-```
-
-### 5. Запуск на основной сети Ethereum (Mainnet)
-
->  **ОСТОРОЖНО:** Требует реальных ETH и несет финансовые риски!
-
-1. Добавьте конфигурацию mainnet в `truffle-config.js`
-2. Убедитесь, что контракт прошел аудит безопасности
-3. Развертывайте только после полного тестирования
-
-```javascript
-mainnet: {
-    provider: () => new HDWalletProvider(
-        mnemonic,
-        "https://mainnet.infura.io/v3/ВАШ_КЛЮЧ"
-    ),
-    network_id: 1,
-    gas: 5500000,
-    gasPrice: 20000000000  // 20 Gwei
-}
-```
-
----
 
 ## Полезные ссылки
 
