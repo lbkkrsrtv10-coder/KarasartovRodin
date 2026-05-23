@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERC-20 токен на Hoodi Testnet — Руководство</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Geologica:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0d0f14;
+    --bg2:       #13161e;
+    --bg3:       #1a1e2a;
+    --border:    #252b3b;
+    --accent:    #4f8cff;
+    --accent2:   #7c5cfc;
+    --success:   #3ecf8e;
+    --warn:      #f5a623;
+    --danger:    #ff5f57;
+    --text:      #cdd6f4;
+    --text-dim:  #7a8099;
+    --text-faint:#3d4460;
+    --code-bg:   #111420;
+    --tag-bg:    #1e2540;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-body: 'Geologica', sans-serif;
+    --sidebar-w: 270px;
+    --radius:    8px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.75;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 32px 0 40px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-logo {
+    padding: 0 24px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .sidebar-logo .logo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: #fff;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .sidebar-logo .logo-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  .nav-section-label {
+    padding: 4px 24px;
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    font-weight: 700;
+    margin-top: 12px;
+    margin-bottom: 4px;
+  }
+
+  .sidebar nav a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 24px;
+    font-size: 13px;
+    color: var(--text-dim);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: color .15s, border-color .15s, background .15s;
+  }
+
+  .sidebar nav a:hover {
+    color: var(--text);
+    background: var(--bg3);
+  }
+
+  .sidebar nav a.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: rgba(79,140,255,.07);
+  }
+
+  .sidebar nav a .num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-faint);
+    min-width: 18px;
+  }
+
+  /* ── Main ── */
+  .main {
+    flex: 1;
+    min-width: 0;
+    padding: 56px 64px 100px 72px;
+    max-width: 900px;
+  }
+
+  /* ── Page header ── */
+  .page-header {
+    margin-bottom: 56px;
+  }
+
+  .page-header .tag-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
+  .tag {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .tag.green { color: var(--success); }
+  .tag.purple { color: var(--accent2); }
+
+  .page-header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #e8eaf6;
+    letter-spacing: -.02em;
+    margin-bottom: 14px;
+  }
+
+  .page-header .subtitle {
+    font-size: 15px;
+    color: var(--text-dim);
+    max-width: 560px;
+    line-height: 1.65;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  /* ── Sections ── */
+  .section {
+    margin-bottom: 56px;
+  }
+
+  .section-anchor {
+    display: block;
+    position: relative;
+    top: -80px;
+    visibility: hidden;
+  }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #e8eaf6;
+    letter-spacing: -.015em;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  h2 .section-num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent);
+    background: rgba(79,140,255,.1);
+    border: 1px solid rgba(79,140,255,.25);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-weight: 600;
+  }
+
+  h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #c5cae9;
+    margin: 28px 0 12px;
+    letter-spacing: -.01em;
+  }
+
+  p { margin-bottom: 14px; color: var(--text); }
+
+  strong { color: #e8eaf6; font-weight: 600; }
+  em { color: var(--text-dim); font-style: normal; }
+
+  /* ── Code ── */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    overflow-x: auto;
+    margin: 16px 0 22px;
+    position: relative;
+  }
+
+  pre .lang-label {
+    position: absolute;
+    top: 10px;
+    right: 48px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    cursor: pointer;
+    padding: 4px 9px;
+    transition: background .15s, color .15s;
+    line-height: 1.4;
+  }
+
+  .copy-btn:hover { background: var(--border); color: var(--text); }
+  .copy-btn.copied { color: var(--success); border-color: var(--success); }
+
+  pre code {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.65;
+    color: #a9b7d6;
+    display: block;
+  }
+
+  /* syntax highlight */
+  .kw  { color: #7c5cfc; }   /* keyword */
+  .fn  { color: #4f8cff; }   /* function / type */
+  .str { color: #3ecf8e; }   /* string */
+  .cm  { color: #3d4460; font-style: italic; } /* comment */
+  .num { color: #f5a623; }   /* number */
+  .op  { color: #a9b7d6; }   /* operator */
+
+  code:not(pre code) {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    color: #c5cae9;
+  }
+
+  /* ── Tables ── */
+  .table-wrap { overflow-x: auto; margin: 16px 0 24px; border-radius: var(--radius); border: 1px solid var(--border); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+  thead tr { background: var(--bg3); }
+
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+  }
+
+  td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,.02); }
+
+  td a, p a { color: var(--accent); text-decoration: none; }
+  td a:hover, p a:hover { text-decoration: underline; }
+
+  /* ── Lists ── */
+  ul, ol {
+    padding-left: 22px;
+    margin: 10px 0 18px;
+  }
+
+  li { margin-bottom: 6px; color: var(--text); }
+  li::marker { color: var(--accent); }
+
+  /* ── Callouts ── */
+  .callout {
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin: 18px 0;
+    border-left: 3px solid;
+    font-size: 14px;
+  }
+
+  .callout.info    { background: rgba(79,140,255,.07); border-color: var(--accent); }
+  .callout.warn    { background: rgba(245,166,35,.07); border-color: var(--warn); }
+  .callout.danger  { background: rgba(255,95,87,.07);  border-color: var(--danger); }
+  .callout.success { background: rgba(62,207,142,.07); border-color: var(--success); }
+
+  .callout strong { display: block; margin-bottom: 4px; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; }
+  .callout.info    strong { color: var(--accent); }
+  .callout.warn    strong { color: var(--warn); }
+  .callout.danger  strong { color: var(--danger); }
+  .callout.success strong { color: var(--success); }
+
+  /* ── Checklist ── */
+  .checklist { list-style: none; padding: 0; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 9px 14px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    cursor: pointer;
+    transition: background .1s;
+    user-select: none;
+  }
+  .checklist li:hover { background: var(--bg3); }
+  .checklist li.done { opacity: .55; }
+  .checklist li.done .chk-box { background: var(--success); border-color: var(--success); }
+  .checklist li.done .chk-box::after { opacity: 1; }
+
+  .chk-box {
+    width: 18px; height: 18px;
+    flex-shrink: 0;
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    margin-top: 2px;
+    position: relative;
+    transition: background .15s, border-color .15s;
+  }
+  .chk-box::after {
+    content: '';
+    position: absolute;
+    left: 4px; top: 2px;
+    width: 6px; height: 9px;
+    border: 2px solid #fff;
+    border-top: none; border-left: none;
+    transform: rotate(43deg);
+    opacity: 0;
+    transition: opacity .15s;
+  }
+
+  /* ── Error cards ── */
+  .error-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin: 20px 0;
+  }
+
+  .error-card .error-head {
+    background: var(--bg3);
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .error-card .error-head .badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    background: rgba(255,95,87,.15);
+    color: var(--danger);
+    border: 1px solid rgba(255,95,87,.3);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-weight: 700;
+    letter-spacing: .04em;
+  }
+
+  .error-card .error-head .err-title {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: #e8eaf6;
+  }
+
+  .error-card .error-body { padding: 16px 18px; }
+  .error-card .error-body .label {
+    font-size: 11px;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  /* ── Links table ── */
+  .links-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+  }
+
+  .link-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    background: var(--bg2);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: border-color .15s, background .15s;
+  }
+
+  .link-card:hover {
+    border-color: var(--accent);
+    background: var(--bg3);
+  }
+
+  .link-card .lc-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e8eaf6;
+  }
+
+  .link-card .lc-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .link-card .lc-url {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    margin-top: 4px;
+  }
+
+  /* ── Finish banner ── */
+  .finish-banner {
+    background: linear-gradient(135deg, rgba(79,140,255,.1), rgba(124,92,252,.1));
+    border: 1px solid rgba(79,140,255,.25);
+    border-radius: 12px;
+    padding: 36px 40px;
+    text-align: center;
+  }
+
+  .finish-banner h2 {
+    border: none;
+    padding: 0;
+    justify-content: center;
+    font-size: 26px;
+    color: #e8eaf6;
+    margin-bottom: 10px;
+  }
+
+  .finish-banner p { color: var(--text-dim); max-width: 480px; margin: 0 auto 20px; }
+
+  .finish-banner ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 0;
+  }
+
+  .finish-banner ul li {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin: 0;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3a4055; }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { padding: 36px 24px 80px; }
+    .links-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">ERC-20 Guide</div>
+    <div class="logo-title">Hoodi Testnet<br>Ethereum Token</div>
+  </div>
+  <nav id="sidenav">
+    <div class="nav-section-label">Начало</div>
+    <a href="#what"><span class="num">01</span>Что мы создаем</a>
+    <a href="#prereq"><span class="num">02</span>Требования</a>
+    <div class="nav-section-label">Настройка</div>
+    <a href="#install"><span class="num">03</span>Установка инструментов</a>
+    <a href="#project"><span class="num">04</span>Создание проекта</a>
+    <a href="#contract"><span class="num">05</span>Смарт-контракт</a>
+    <a href="#deploy-config"><span class="num">06</span>Настройка развертывания</a>
+    <div class="nav-section-label">Деплой</div>
+    <a href="#compile"><span class="num">07</span>Компиляция</a>
+    <a href="#hoodi"><span class="num">08</span>Сеть Hoodi</a>
+    <a href="#deploy"><span class="num">09</span>Развертывание</a>
+    <a href="#import"><span class="num">10</span>Импорт в кошелек</a>
+    <a href="#send"><span class="num">11</span>Отправка токенов</a>
+    <div class="nav-section-label">Справочник</div>
+    <a href="#errors"><span class="num">12</span>Устранение неполадок</a>
+    <a href="#next"><span class="num">13</span>Дальнейшие шаги</a>
+    <a href="#links"><span class="num">14</span>Полезные ссылки</a>
+    <a href="#checklist"><span class="num">15</span>Чек-лист</a>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div class="tag-row">
+      <span class="tag">Ethereum</span>
+      <span class="tag green">ERC-20</span>
+      <span class="tag purple">Hoodi Testnet</span>
+      <span class="tag">Solidity 0.8.20</span>
+      <span class="tag">Truffle</span>
+    </div>
+    <h1>Создание и развертывание собственной криптовалюты</h1>
+    <p class="subtitle">Полное пошаговое руководство для начинающих — от написания смарт-контракта до отправки токенов в кошельке.</p>
+  </header>
+
+  <!-- 01 -->
+  <section class="section" id="what">
+    <span class="section-anchor"></span>
+    <h2><span class="section-num">01</span>Что мы создаем</h2>
+    <p>Мы создадим <strong>собственную криптовалюту</strong> (ERC-20 токен) на блокчейне Ethereum и развернем её в <strong>бесплатной тестовой сети Hoodi</strong>.</p>
+
+    <h3>Что вы получите</h3>
+    <ul>
+      <li>Собственный токен с уникальным названием и символом</li>
+      <li>Возможность выпускать любое количество токенов</li>
+      <li>Возможность отправлять токены другим людям</li>
+      <li>Полный контроль над эмиссией</li>
+    </ul>
+
+    <h3>Что такое Hoodi Testnet</h3>
+    <ul>
+      <li>Бесплатная тестовая сеть Ethereum для разработчиков</li>
+      <li>Токены не имеют реальной ценности</li>
+      <li>Идеально подходит для обучения и тестирования</li>
+    </ul>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 02 -->
+  <section class="section" id="prereq">
+    <span class="section-anchor"></span>
+    <h2><span class="section-num">02</span>Предварительные требования</h2>
+    <p>Перед началом убедитесь, что у вас есть:</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Компонент</th><th>Назначение</th><th>Где взять</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>MetaMask</strong></td><td>Кошелек для управления токенами</td><td><a href="https://metamask.io" target="_blank">metamask.io</a></td></tr>
+          <tr><td><strong>Git</strong></td><td>Для установки зависимостей</td><td><a href="https://git-scm.com" target="_blank">git-scm.com</a></td></tr>
+          <tr><td><strong>Node.js v22.x LTS</strong></td><td>Среда выполнения JavaScript</td><td><a href="https://nodejs.org" target="_blank">nodejs.org</a></td></tr>
+          <tr><td><strong>Командная строка</strong></td><td>PowerShell, cmd или терминал</td><td>Встроена в ОС</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 03 -->
+  <section class="section" id="install">
+    <span class="section-anchor"></span>
+    <h2><span class="section-num">03</span>Установка инструментов</h2>
+
+    <h3>1. Установка Node.js</h3>
+    <p><strong>Windows / macOS / Linux:</strong></p>
+    <ol>
+      <li>Перейдите на <a href="https://nodejs.org/" target="_blank">nodejs.org</a></li>
+      <li>Скачайте и установите <strong>Node.js 22 LTS</strong> (или новее)</li>
+      <li>После установки перезапустите терминал</li>
+    </ol>
+    <p><strong>Проверка установки:</strong></p>
+    <pre><span class="lang-label">bash</span><button class="copy-btn">copy</button><code><span class="cm"># Должно показать v22.x.x или выше</span>
+node --version
+<span class="cm"># Должно показать 10.x.x или выше</span>
+npm --version</code></pre>
+
+    <h3>2. Установка Git</h3>
+    <p><strong>Windows:</strong></p>
+    <ol>
+      <li>Скачайте установщик с <a href="https://git-scm.com" target="_blank">git-scm.com</a></li>
+      <li>При установке обязательно выберите опцию: <code>"Git from the command line and also from 3rd-party software"</code></li>
+      <li>После установки перезагрузите компьютер</li>
+    </ol>
+    <p><strong>macOS:</strong></p>
+    <pre><span class="lang-label">bash</span><button class="copy-btn">copy</button><code>brew install git</code></pre>
+    <p><strong>Linux (Ubuntu/Debian):</strong></p>
+    <pre><span class="lang-label">bash</span><button class="copy-btn">copy</button><code>sudo apt update
+sudo apt install git</code></pre>
+    <p><strong>Проверка:</strong></p>
+    <pre><span class="lang-label">bash</span><button class="copy-btn">copy</button><code>git --version   <span class="cm"># Должно показать git version 2.x.x</span></code></pre>
+
+    <h3>3. Установка Truffle (глобально)</h3>
+    <pre><span class="lang-label">bash</span><button class="copy-btn">copy</button><code>npm install -g truffle</code></pre>
+    <p><strong>Проверка:</strong></p>
+    <pre><span class="lang-label">bash</span><button class="copy-btn">copy</button><code>truffle version   <span class="cm"># Должно показать Truffle v5.x.x</span></code></pre>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 04 -->
+  <section class="section" id="project">
+    <span class="section-anchor"></span>
+    <h2><span class="section-num">04</span>Создание проекта</h2>
+
+    <h3>Шаг 1: Создайте папку проекта</h3>
+    <pre><span class="lang-label">bash</span><button class="copy-btn">copy</button><code><span class="cm"># Перейдите в нужную директорию</span>
+cd N:\          <span class="cm"># Для Windows (пример)</span>
+cd ~/Desktop    <span class="cm"># Для macOS/Linux</span>
+
+<span class="cm"># Создайте папку проекта</span>
+mkdir MyToken
+cd MyToken</code></pre>
+
+    <h3>Шаг 2: Инициализируйте Truffle проект</h3>
+    <pre><span class="lang-label">bash</span><button class="copy-btn">copy</button><code>truffle init</code></pre>
+
+    <h3>Шаг 3: Установите зависимости</h3>
+    <pre><span class="lang-label">bash</span><button class="copy-btn">copy</button><code><span class="cm"># Создайте package.json</span>
+npm init -y
+
+<span class="cm"># Установите OpenZeppelin (библиотека готовых контрактов)</span>
+npm install @openzeppelin/contracts
+
+<span class="cm"># Установите HDWalletProvider (для подключения к сетям)</span>
+npm install @truffle/hdwallet-provider</code></pre>
+
+    <h3>Структура проекта после инициализации</h3>
+    <pre><button class="copy-btn">copy</button><code>MyToken/
+├── contracts/           <span class="cm"># Папка со смарт-контрактами</span>
+│   └── .gitkeep
+├── migrations/          <span class="cm"># Скрипты для развертывания</span>
+│   └── 1_initial_migration.js
+├── test/                <span class="cm"># Папка для тестов</span>
+├── build/               <span class="cm"># Скомпилированные файлы (авто)</span>
+├── truffle-config.js    <span class="cm"># Конфигурация Truffle</span>
+└── package.json         <span class="cm"># Зависимости проекта</span></code></pre>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 05 -->
+  <section class="section" id="contract">
+    <span class="section-anchor"></span>
+    <h2><span class="section-num">05</span>Написание смарт-контракта</h2>
+
+    <h3>Шаг 1: Создайте файл контракта</h3>
+    <p>Создайте файл <code>contracts/Token.sol</code> и откройте его в любом текстовом редакторе.</p>
+
+    <h3>Шаг 2: Напишите код токена</h3>
+    <pre><span class="lang-label">solidity</span><button class="copy-btn">copy</button><code><span class="cm">// SPDX-License-Identifier: MIT</span>
+<span class="cm">// Версия Solidity (используем 0.8.20 для совместимости)</span>
+<span class="kw">pragma solidity</span> ^<span class="num">0.8.20</span>;
+
+<span class="cm">// Импортируем стандарт ERC20 из библиотеки OpenZeppelin</span>
+<span class="kw">import</span> <span class="str">"@openzeppelin/contracts/token/ERC20/ERC20.sol"</span>;
+
+<span class="cm">// Объявляем контракт MyToken, который наследует все функции ERC20</span>
+<span class="kw">contract</span> <span class="fn">MyToken</span> <span class="kw">is</span> <span class="fn">ERC20</span> {
+
+    <span class="cm">// INITIAL_SUPPLY = общее количество токенов</span>
+    <span class="cm">// 1000000000 = 1 миллиард токенов</span>
+    <span class="cm">// (10 ** 18) = 18 знаков после запятой (стандарт Ethereum)</span>
+    <span class="kw">uint256 public constant</span> INITIAL_SUPPLY = <span class="num">1000000000</span> * (<span class="num">10</span> ** <span class="num">18</span>);
+
+    <span class="cm">// "MY_TOKEN" - название токена, "MYT" - символ (тикер)</span>
+    <span class="kw">constructor</span>() <span class="fn">ERC20</span>(<span class="str">"MY_TOKEN"</span>, <span class="str">"MYT"</span>) {
+        <span class="cm">// Все токены отправляются создателю контракта</span>
+        <span class="fn">_mint</span>(msg.sender, INITIAL_SUPPLY);
+    }
+}</code></pre>
+
+    <h3>Шаг 3: Настройте количество токенов</h3>
+    <p>Измените строку <code>INITIAL_SUPPLY</code> на нужное вам значение:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Желаемое количество</th><th>Код</th></tr></thead>
+        <tbody>
+          <tr><td>1 000 токенов</td><td><code>1000 * (10 ** 18)</code></td></tr>
+          <tr><td>1 000 000 токенов</td><td><code>1000000 * (10 ** 18)</code></td></tr>
+          <tr><td>1 000 000 000 токенов</td><td><code>1000000000 * (10 ** 18)</code></td></tr>
+          <tr><td>10 000 000 000 токенов</td><td><code>10000000000 * (10 ** 18)</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout info">
+      <strong>Пояснение</strong>
+      <code>(10 ** 18)</code> означает 18 нулей. Это нужно, чтобы токен можно было делить на мелкие части — как копейки у рубля.
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 06 -->
+  <section class="section" id="deploy-config">
+    <span class="section-anchor"></span>
+    <h2><span class="section-num">06</span>Настройка развертывания</h2>
+
+    <h3>Шаг 1: Создайте скрипт миграции</h3>
+    <p>Создайте файл <code>migrations/2_deploy_contracts.js</code>:</p>
+    <pre><span class="lang-label">javascript</span><button class="copy-btn">copy</button><code><span class="kw">const</span> MyToken = artifacts.<span class="fn">require</span>(<span class="str">"MyToken"</span>);
+
+module.exports = <span class="kw">function</span>(deployer) {
+    deployer.<span class="fn">deploy</span>(MyToken);
+};</code></pre>
+
+    <h3>Шаг 2: Настройте truffle-config.js</h3>
+    <p>Откройте <code>truffle-config.js</code> и замените содержимое на:</p>
+    <pre><span class="lang-label">javascript</span><button class="copy-btn">copy</button><code><span class="kw">const</span> HDWalletProvider = <span class="fn">require</span>(<span class="str">'@truffle/hdwallet-provider'</span>);
+<span class="kw">const</span> fs = <span class="fn">require</span>(<span class="str">'fs'</span>);
+
+<span class="kw">let</span> mnemonic;
+<span class="kw">try</span> {
+    mnemonic = fs.<span class="fn">readFileSync</span>(<span class="str">'.secret'</span>, <span class="str">'utf8'</span>).<span class="fn">toString</span>().<span class="fn">trim</span>();
+    <span class="kw">if</span> (mnemonic && mnemonic.<span class="fn">split</span>(<span class="str">' '</span>).length === <span class="num">12</span>) {
+        console.<span class="fn">log</span>(<span class="str">'Файл .secret загружен успешно'</span>);
+    }
+} <span class="kw">catch</span> (err) {
+    console.<span class="fn">log</span>(<span class="str">'Файл .secret не найден. Использую тестовую фразу'</span>);
+    mnemonic = <span class="str">"test test test test test test test test test test test junk"</span>;
+}
+
+module.exports = {
+    networks: {
+        development: {
+            host: <span class="str">"127.0.0.1"</span>,
+            port: <span class="num">7545</span>,
+            network_id: <span class="str">"*"</span>
+        },
+        hoodi: {
+            <span class="fn">provider</span>: () => <span class="kw">new</span> <span class="fn">HDWalletProvider</span>(
+                mnemonic,
+                <span class="str">"https://rpc.hoodi.ethpandaops.io"</span>
+            ),
+            network_id: <span class="num">560048</span>,
+            gas: <span class="num">5500000</span>,
+            confirmations: <span class="num">2</span>,
+            timeoutBlocks: <span class="num">200</span>,
+            skipDryRun: <span class="kw">true</span>
+        }
+    },
+    compilers: {
+        solc: { version: <span class="str">"0.8.20"</span> }
+    }
+};</code></pre>
+
+    <h3>Шаг 3: Создайте файл с сид-фразой (опционально)</h3>
+    <pre><span class="lang-label">bash</span><button class="copy-btn">copy</button><code>echo "ваша_сид_фраза_из_12_слов" > .secret</code></pre>
+    <div class="callout danger">
+      <strong>Важно</strong>
+      Никогда не публикуйте файл <code>.secret</code> в интернете или GitHub! Добавьте его в <code>.gitignore</code>.
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 07 -->
+  <section class="section" id="compile">
+    <span class="section-anchor"></span>
+    <h2><span class="section-num">07</span>Компиляция контракта</h2>
+    <pre><span class="lang-label">bash</span><button class="copy-btn">copy</button><code>truffle compile</code></pre>
+    <p><strong>Ожидаемый вывод при успехе:</strong></p>
+    <pre><button class="copy-btn">copy</button><code>Compiling your contracts...
+===========================
+> Compiling @openzeppelin\contracts\token\ERC20\ERC20.sol
+> Compiling @openzeppelin\contracts\token\ERC20\IERC20.sol
+> Compiling @openzeppelin\contracts\utils\Context.sol
+> Compiling .\contracts\Token.sol
+
+> Artifacts written to N:\MyToken\build\contracts
+> Compiled successfully using:
+   - solc: 0.8.20+commit.a1b79de6.Emscripten.clang</code></pre>
+    <div class="callout info">
+      <strong>Что произошло</strong>
+      Truffle преобразовал Solidity-код в байт-код, понятный блокчейну, и сохранил его в папке <code>build/contracts/</code>.
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 08 -->
+  <section class="section" id="hoodi">
+    <span class="section-anchor"></span>
+    <h2><span class="section-num">08</span>Подготовка сети Hoodi</h2>
+    <p>Hoodi — тестовая сеть Ethereum, запущенная в 2025 году на замену Ropsten и Goerli. Полностью совместима с основной сетью, бесплатна, тестовый ETH можно получить из кранов.</p>
+
+    <h3>Добавить Hoodi в MetaMask вручную</h3>
+    <ol>
+      <li>Откройте MetaMask → выпадающий список сетей → <strong>Добавить сеть</strong></li>
+      <li>Нажмите <strong>Добавить сеть вручную</strong> и заполните поля:</li>
+    </ol>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Поле</th><th>Значение</th></tr></thead>
+        <tbody>
+          <tr><td>Имя сети</td><td><code>Hoodi Testnet</code></td></tr>
+          <tr><td>Новый RPC URL</td><td><code>https://rpc.hoodi.ethpandaops.io</code></td></tr>
+          <tr><td>Chain ID</td><td><code>560048</code></td></tr>
+          <tr><td>Символ валюты</td><td><code>ETH</code></td></tr>
+          <tr><td>URL обозревателя</td><td><code>https://hoodi.beaconcha.in/</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Или добавьте автоматически через <a href="https://chainlist.org" target="_blank">Chainlist</a> — найдите <strong>Hoodi</strong> и нажмите <strong>Add to MetaMask</strong>.</p>
+
+    <h3>Получить тестовый ETH</h3>
+    <ul>
+      <li><strong>Hoodi PoW Faucet</strong> — <a href="https://holesky-faucet.pk910.de" target="_blank">holesky-faucet.pk910.de</a> (~0.5 ETH, 1–5 мин)</li>
+      <li><strong>Google Cloud Web3 Faucet</strong> — <a href="https://cloud.google.com/application/web3/faucet" target="_blank">cloud.google.com</a> (0.1 ETH, нужен Google-аккаунт)</li>
+    </ul>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 09 -->
+  <section class="section" id="deploy">
+    <span class="section-anchor"></span>
+    <h2><span class="section-num">09</span>Развертывание токена</h2>
+    <pre><span class="lang-label">bash</span><button class="copy-btn">copy</button><code>truffle migrate --network hoodi</code></pre>
+    <p><strong>Ожидаемый вывод при успехе:</strong></p>
+    <pre><button class="copy-btn">copy</button><code>Starting migrations...
+======================
+> Network name:    'hoodi'
+> Network id:      560048
+> Block gas limit: 59941351
+
+2_deploy_contracts.js
+=====================
+
+   Deploying 'MyToken'
+   -------------------
+   > transaction hash:    0x5a52ef1ddcd2fc82120fce6485c1768786adc8269f0ea141d13f9786b0a656d5
+   > Blocks: 2            Seconds: 12
+   > contract address:    0x1816eeda78540C0BEf142508b7A76E89C916feB0
+   > account:             0x73AC80f41944e0Ebb9e3cCbf35F8de5114053E63
+   > balance:             0.996689864537303392
+   > gas used:            957852
+   > gas price:           3.455790104 gwei
+   > total cost:          0.003310135462696608 ETH</code></pre>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Параметр</th><th>Описание</th></tr></thead>
+        <tbody>
+          <tr><td><code>contract address</code></td><td><strong>Сохраните этот адрес!</strong> Он нужен для импорта токена в кошелек.</td></tr>
+          <tr><td><code>account</code></td><td>Ваш кошелек в сети Hoodi</td></tr>
+          <tr><td><code>total cost</code></td><td>Стоимость развертывания в тестовом ETH</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 10 -->
+  <section class="section" id="import">
+    <span class="section-anchor"></span>
+    <h2><span class="section-num">10</span>Импорт токена в кошелек</h2>
+    <ol>
+      <li>Переключитесь на сеть <strong>Hoodi</strong> в MetaMask</li>
+      <li>Нажмите <strong>Импорт токенов</strong> (синяя кнопка внизу)</li>
+      <li>В поле «Адрес контракта токена» вставьте адрес из вывода выше</li>
+      <li>Символ токена и десятичные знаки (18) заполнятся автоматически</li>
+      <li>Нажмите <strong>Добавить пользовательский токен</strong> → <strong>Импортировать токены</strong></li>
+    </ol>
+    <div class="callout warn">
+      <strong>Баланс показывает 0?</strong>
+      При использовании стандартной тестовой фразы токены принадлежат другому кошельку. Импортируйте кошелек разработчика: MetaMask → «Импортировать аккаунт» → «Приватный ключ» → вставьте ключ: <code>0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a</code>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 11 -->
+  <section class="section" id="send">
+    <span class="section-anchor"></span>
+    <h2><span class="section-num">11</span>Проверка и отправка токенов</h2>
+
+    <h3>Проверка баланса через консоль Truffle</h3>
+    <pre><span class="lang-label">bash</span><button class="copy-btn">copy</button><code>truffle console --network hoodi</code></pre>
+    <pre><span class="lang-label">javascript</span><button class="copy-btn">copy</button><code><span class="kw">const</span> token = <span class="kw">await</span> MyToken.<span class="fn">deployed</span>();
+
+<span class="kw">const</span> balance = <span class="kw">await</span> token.<span class="fn">balanceOf</span>(<span class="str">'0x73AC80f41944e0Ebb9e3cCbf35F8de5114053E63'</span>);
+console.<span class="fn">log</span>(<span class="str">'Баланс в токенах:'</span>, Number(balance.<span class="fn">toString</span>()) / <span class="num">10</span>**<span class="num">18</span>);
+
+console.<span class="fn">log</span>(<span class="str">'Название:'</span>, <span class="kw">await</span> token.<span class="fn">name</span>());
+console.<span class="fn">log</span>(<span class="str">'Символ:'</span>,   <span class="kw">await</span> token.<span class="fn">symbol</span>());
+
+<span class="kw">const</span> supply = <span class="kw">await</span> token.<span class="fn">totalSupply</span>();
+console.<span class="fn">log</span>(<span class="str">'Total supply:'</span>, Number(supply.<span class="fn">toString</span>()) / <span class="num">10</span>**<span class="num">18</span>);
+
+.exit</code></pre>
+
+    <h3>Отправка через MetaMask</h3>
+    <ol>
+      <li>Убедитесь, что выбрана сеть <strong>Hoodi</strong></li>
+      <li>Нажмите на токен <code>MY_TOKEN</code> → <strong>Отправить</strong></li>
+      <li>Введите адрес получателя и количество токенов</li>
+      <li>Нажмите «Далее» → «Подтвердить»</li>
+    </ol>
+    <div class="callout warn">
+      <strong>Важно</strong>
+      У отправителя должен быть тестовый ETH для оплаты газа.
+    </div>
+
+    <h3>Отправка через Hoodi Etherscan</h3>
+    <ol>
+      <li>Откройте <a href="https://hoodi.etherscan.io" target="_blank">hoodi.etherscan.io</a> и найдите адрес вашего контракта</li>
+      <li>Вкладка <strong>Write Contract</strong> → <strong>Connect to Web3</strong></li>
+      <li>Функция <code>transfer</code>: укажите адрес получателя и сумму в минимальных единицах</li>
+      <li><em>Пример: 100 токенов = <code>100000000000000000000</code></em></li>
+      <li>Нажмите <strong>Write</strong> → подтвердите в MetaMask</li>
+    </ol>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 12 -->
+  <section class="section" id="errors">
+    <span class="section-anchor"></span>
+    <h2><span class="section-num">12</span>Устранение неполадок</h2>
+
+    <div class="error-card">
+      <div class="error-head">
+        <span class="badge">ОШИБКА</span>
+        <span class="err-title">Mnemonic invalid or undefined</span>
+      </div>
+      <div class="error-body">
+        <div class="label">Причина</div>
+        <p>Файл <code>.secret</code> пустой или содержит неправильный формат.</p>
+        <div class="label">Решение</div>
+        <pre><button class="copy-btn">copy</button><code>echo "test test test test test test test test test test test junk" > .secret</code></pre>
+      </div>
+    </div>
+
+    <div class="error-card">
+      <div class="error-head">
+        <span class="badge">ОШИБКА</span>
+        <span class="err-title">spawn git ENOENT</span>
+      </div>
+      <div class="error-body">
+        <div class="label">Причина</div>
+        <p>Git не установлен или не добавлен в PATH.</p>
+        <div class="label">Решение</div>
+        <ol>
+          <li>Установите Git с <a href="https://git-scm.com" target="_blank">git-scm.com</a></li>
+          <li>При установке выберите «Git from the command line»</li>
+          <li>Перезагрузите компьютер</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="error-card">
+      <div class="error-head">
+        <span class="badge">ОШИБКА</span>
+        <span class="err-title">This version of µWS is not compatible</span>
+      </div>
+      <div class="error-body">
+        <div class="label">Причина</div>
+        <p>Проблемы с библиотекой µWS на Windows.</p>
+        <div class="label">Решение</div>
+        <p>Это предупреждение, не влияющее на работу. Можно игнорировать.</p>
+      </div>
+    </div>
+
+    <div class="error-card">
+      <div class="error-head">
+        <span class="badge">ОШИБКА</span>
+        <span class="err-title">ENOENT: no such file or directory, open '.secret'</span>
+      </div>
+      <div class="error-body">
+        <div class="label">Причина</div>
+        <p>Отсутствует файл <code>.secret</code>.</p>
+        <div class="label">Решение</div>
+        <p>Не критично — Truffle использует тестовую фразу. Для устранения предупреждения:</p>
+        <pre><button class="copy-btn">copy</button><code>echo "" > .secret</code></pre>
+      </div>
+    </div>
+
+    <div class="error-card">
+      <div class="error-head">
+        <span class="badge">ПРОБЛЕМА</span>
+        <span class="err-title">Баланс токена показывает 0 или прочерк</span>
+      </div>
+      <div class="error-body">
+        <div class="label">Причина</div>
+        <p>Токены принадлежат другому кошельку (тестовому).</p>
+        <div class="label">Решение</div>
+        <p>Импортируйте кошелек разработчика — см. раздел <a href="#import">Импорт в кошелек</a>.</p>
+      </div>
+    </div>
+
+    <div class="error-card">
+      <div class="error-head">
+        <span class="badge">ПРОБЛЕМА</span>
+        <span class="err-title">truffle migrate зависает или очень медленный</span>
+      </div>
+      <div class="error-body">
+        <div class="label">Причина</div>
+        <p>Проблемы с RPC соединением.</p>
+        <div class="label">Решение</div>
+        <p>Попробуйте альтернативный RPC в <code>truffle-config.js</code>:</p>
+        <pre><button class="copy-btn">copy</button><code>"https://ethereum-hoodi-rpc.publicnode.com"</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 13 -->
+  <section class="section" id="next">
+    <span class="section-anchor"></span>
+    <h2><span class="section-num">13</span>Дальнейшие шаги</h2>
+
+    <h3>1. Добавление функции Mint (создание токенов)</h3>
+    <pre><span class="lang-label">solidity</span><button class="copy-btn">copy</button><code><span class="kw">import</span> <span class="str">"@openzeppelin/contracts/access/Ownable.sol"</span>;
+
+<span class="kw">contract</span> <span class="fn">MyToken</span> <span class="kw">is</span> <span class="fn">ERC20</span>, <span class="fn">Ownable</span> {
+
+    <span class="kw">uint256 public constant</span> INITIAL_SUPPLY = <span class="num">1000000000</span> * (<span class="num">10</span> ** <span class="num">18</span>);
+
+    <span class="kw">constructor</span>() <span class="fn">ERC20</span>(<span class="str">"MY_TOKEN"</span>, <span class="str">"MYT"</span>) <span class="fn">Ownable</span>(msg.sender) {
+        <span class="fn">_mint</span>(msg.sender, INITIAL_SUPPLY);
+    }
+
+    <span class="cm">// Только владелец может создавать новые токены</span>
+    <span class="kw">function</span> <span class="fn">mint</span>(<span class="kw">address</span> to, <span class="kw">uint256</span> amount) <span class="kw">external onlyOwner</span> {
+        <span class="fn">_mint</span>(to, amount);
+    }
+}</code></pre>
+
+    <h3>2. Добавление функции Burn (сжигание токенов)</h3>
+    <pre><span class="lang-label">solidity</span><button class="copy-btn">copy</button><code><span class="cm">// Любой может сжечь свои токены</span>
+<span class="kw">function</span> <span class="fn">burn</span>(<span class="kw">uint256</span> amount) <span class="kw">external</span> {
+    <span class="fn">_burn</span>(msg.sender, amount);
+}</code></pre>
+
+    <h3>3. Верификация контракта на Etherscan</h3>
+    <pre><span class="lang-label">bash</span><button class="copy-btn">copy</button><code>npm install @truffle/plugin-verify
+truffle run verify MyToken --network hoodi --license MIT</code></pre>
+    <p>Или вручную на <a href="https://hoodi.etherscan.io" target="_blank">hoodi.etherscan.io</a>: найдите контракт → <strong>Verify and Publish</strong> → Solidity (Single file) → вставьте код → выберите версию <code>0.8.20</code>.</p>
+
+    <h3>4. Запуск на основной сети (Mainnet)</h3>
+    <div class="callout danger">
+      <strong>Осторожно</strong>
+      Mainnet требует реальных ETH и несет финансовые риски. Развертывайте только после полного тестирования и аудита.
+    </div>
+    <pre><span class="lang-label">javascript</span><button class="copy-btn">copy</button><code>mainnet: {
+    <span class="fn">provider</span>: () => <span class="kw">new</span> <span class="fn">HDWalletProvider</span>(
+        mnemonic,
+        <span class="str">"https://mainnet.infura.io/v3/ВАШ_КЛЮЧ"</span>
+    ),
+    network_id: <span class="num">1</span>,
+    gas: <span class="num">5500000</span>,
+    gasPrice: <span class="num">20000000000</span>   <span class="cm">// 20 Gwei</span>
+}</code></pre>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 14 -->
+  <section class="section" id="links">
+    <span class="section-anchor"></span>
+    <h2><span class="section-num">14</span>Полезные ссылки</h2>
+    <div class="links-grid">
+      <a class="link-card" href="https://docs.openzeppelin.com" target="_blank">
+        <span class="lc-name">OpenZeppelin Docs</span>
+        <span class="lc-desc">Документация по ERC-20 и стандартам</span>
+        <span class="lc-url">docs.openzeppelin.com</span>
+      </a>
+      <a class="link-card" href="https://hoodi.etherscan.io" target="_blank">
+        <span class="lc-name">Hoodi Etherscan</span>
+        <span class="lc-desc">Обозреватель тестовой сети</span>
+        <span class="lc-url">hoodi.etherscan.io</span>
+      </a>
+      <a class="link-card" href="https://chainlist.org" target="_blank">
+        <span class="lc-name">Chainlist</span>
+        <span class="lc-desc">Параметры EVM-сетей</span>
+        <span class="lc-url">chainlist.org</span>
+      </a>
+      <a class="link-card" href="https://remix.ethereum.org" target="_blank">
+        <span class="lc-name">Remix IDE</span>
+        <span class="lc-desc">Онлайн-редактор контрактов</span>
+        <span class="lc-url">remix.ethereum.org</span>
+      </a>
+      <a class="link-card" href="https://docs.soliditylang.org" target="_blank">
+        <span class="lc-name">Solidity Docs</span>
+        <span class="lc-desc">Документация по Solidity</span>
+        <span class="lc-url">docs.soliditylang.org</span>
+      </a>
+      <a class="link-card" href="https://trufflesuite.com" target="_blank">
+        <span class="lc-name">Truffle Suite</span>
+        <span class="lc-desc">Документация Truffle</span>
+        <span class="lc-url">trufflesuite.com</span>
+      </a>
+      <a class="link-card" href="https://metamask.io" target="_blank">
+        <span class="lc-name">MetaMask</span>
+        <span class="lc-desc">Расширение кошелька</span>
+        <span class="lc-url">metamask.io</span>
+      </a>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 15 -->
+  <section class="section" id="checklist">
+    <span class="section-anchor"></span>
+    <h2><span class="section-num">15</span>Финальный чек-лист</h2>
+    <p>Нажмите на пункт, чтобы отметить его выполненным:</p>
+    <ul class="checklist" id="checklist-list">
+      <li data-i="0"><span class="chk-box"></span>Node.js 22 LTS установлен (<code>node --version</code>)</li>
+      <li data-i="1"><span class="chk-box"></span>Truffle установлен глобально (<code>truffle version</code>)</li>
+      <li data-i="2"><span class="chk-box"></span>Git установлен и работает (<code>git --version</code>)</li>
+      <li data-i="3"><span class="chk-box"></span>Проект создан (<code>truffle init</code>)</li>
+      <li data-i="4"><span class="chk-box"></span>Зависимости установлены (<code>npm install</code>)</li>
+      <li data-i="5"><span class="chk-box"></span>Контракт <code>Token.sol</code> написан</li>
+      <li data-i="6"><span class="chk-box"></span>Компиляция прошла без ошибок (<code>truffle compile</code>)</li>
+      <li data-i="7"><span class="chk-box"></span>Сеть Hoodi добавлена в MetaMask</li>
+      <li data-i="8"><span class="chk-box"></span>Тестовый ETH получен (баланс > 0.01)</li>
+      <li data-i="9"><span class="chk-box"></span>Развертывание выполнено (<code>truffle migrate --network hoodi</code>)</li>
+      <li data-i="10"><span class="chk-box"></span>Адрес контракта сохранен</li>
+      <li data-i="11"><span class="chk-box"></span>Токен импортирован в MetaMask</li>
+      <li data-i="12"><span class="chk-box"></span>Отправка токенов работает</li>
+    </ul>
+  </section>
+
+  <hr class="divider">
+
+  <!-- FINISH -->
+  <div class="finish-banner">
+    <h2>Поздравляю!</h2>
+    <p>Вы успешно создали и развернули собственную криптовалюту в тестовой сети Hoodi. Что дальше:</p>
+    <ul>
+      <li>Экспериментируйте с кодом контракта</li>
+      <li>Создайте веб-интерфейс для токена</li>
+      <li>Отправьте токены друзьям</li>
+      <li>Изучайте стейкинг, голосование, DAO</li>
+    </ul>
+  </div>
+
+  <p style="margin-top:32px; font-size:13px; color: var(--text-faint); text-align:center;">
+    Руководство предоставлено в образовательных целях. Используйте на свой риск при работе с реальными средствами.
+  </p>
+
+</main>
+
+<script>
+  // ── Copy buttons ──
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const code = btn.closest('pre').querySelector('code');
+      const text = code.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1800);
+      });
+    });
+  });
+
+  // ── Checklist ──
+  const items = document.querySelectorAll('.checklist li');
+  const state = JSON.parse(localStorage.getItem('chk') || '{}');
+  items.forEach(li => {
+    const i = li.dataset.i;
+    if (state[i]) li.classList.add('done');
+    li.addEventListener('click', () => {
+      li.classList.toggle('done');
+      state[i] = li.classList.contains('done');
+      try { localStorage.setItem('chk', JSON.stringify(state)); } catch(e) {}
+    });
+  });
+
+  // ── Active nav link on scroll ──
+  const sections = document.querySelectorAll('.section');
+  const navLinks = document.querySelectorAll('.sidebar nav a');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
